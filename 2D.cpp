@@ -137,8 +137,8 @@ int main()
 		grid[i] = new bool[length.y]{false};
 	}
 
-    point triangle[] {{5,5},{5,10},{10,10},{10,5}};
-    draw(grid, length, triangle, 4);
+    point polygon[] {{5,5},{5,10},{10,10},{10,5}};
+    draw(grid, length, polygon, 4);
 
 	dispGraph(grid, length);
 
