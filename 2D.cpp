@@ -3,80 +3,113 @@
 
 struct dimensions
 {
-	 const int x;
-	 const int y;
+	 int x;
+	 int y;
 };
 
-struct line
+struct point
 {
-	double x1;
-	double y1;
-	double x2;
-	double y2;
+	double x;
+	double y;
 };
 
-void draw(bool **grid, dimensions length, line target)
+void draw(bool **grid, dimensions length, point *target, int arLength)
 {
-	//checks for undefined slope
-	int zerocheck = target.x2 - target.x1;
-	
-	//draws undefined slope
-	if(zerocheck == 0)
+	for(int i = 0; i < arLength; ++ i)
 	{
-		int x = std::round(target.x1);
-		int y = std::round(target.y1);
-		
-		if(target.y2 > target.y1)
-			for(;y <= target.y2; ++y)
-			{
-				grid[x][y] = true;
-			}
-		else
-			for(;y >= target.y2; --y)
-			{
-				grid[x][y] = true;
-			}
-			
-		return;
-	}
-	
-	//slope of the line
-	double m = (target.y2 - target.y1)/zerocheck;
-	
-	if((std::abs(m) <= 1.0) && (std::abs(m) >= 0.0))
-	{
-		double trueY = target.x1;
-		int intY = std::round(target.x1);
-		
-		for(int x = target.x1; x <= target.x2; ++x)
-		{
-			trueY = trueY + m;
-			intY = round(trueY);
-			grid[x][intY] = true;
-		}
-	}
-	
-	else
-	{
-		double trueX = target.x1;
-		int intX = std::round(target.x1);
-		
-		if(m > 0)
-			for(int y = target.y1; y <= target.y2; ++y)
-			{
-				trueX = trueX + (1.0/m);
-				intX = std::round(trueX);
-				grid[intX][y] = true;
-			}
-		
-		else
-			for(int y = target.y1; y >= target.y2; --y)
-			{
-				trueX = trueX + (1.0/std::abs(m));
-				intX = std::round(trueX);
-				grid[intX][y] = true;
-			}
-	}
+        double x1 = target[i].x;
+        double x2;
+
+        //loops back to the first vertex's x coordinate
+        if(i == arLength - 1)
+            x2 = target[0].x;
+        else
+            x2 = target[i+1].x;
+
+        double y1 = target[i].y;
+        double y2;
+
+        //loops back to the first vertex's y coordinate
+        if(i == arLength - 1)
+            y2 = target[0].y;
+        else
+            y2 = target[i+1].y;
+
+        //makes sure the line starts with the point with the smallest x value
+        if(x1 > x2)
+        {
+            double temp = x1;
+            x1 = x2;
+            x2 = temp;
+
+            temp = y1;
+            y1 = y2;
+            y2 = temp;
+        }
+
+
+        //checks for undefined slope
+        int dx = x2 - x1;
+
+        //draws undefined slope
+        if(dx == 0)
+        {
+            int x = std::round(x1);
+            int y = std::round(y1);
+
+            if(y2 > y1)
+                for(;y <= y2; ++y)
+                {
+                    grid[x][y] = true;
+                }
+            else
+                for(;y >= y2; --y)
+                {
+                    grid[x][y] = true;
+                }
+
+        }
+        else
+        {
+            //slope of the line
+            double m = (y2 - y1)/dx;
+
+            if((std::abs(m) <= 1.0) && (std::abs(m) >= 0.0))
+            {
+                double trueY = y1;
+                int intY = std::round(y1);
+
+                for(int x = x1; x <= x2; ++x)
+                {
+                    grid[x][intY] = true;
+                    trueY = trueY + m;
+                    intY = round(trueY);
+                }
+            }
+
+            else
+            {
+                double trueX = x1;
+                int intX = std::round(x1);
+
+                if(m > 0.0)
+                    for(int y = y1; y <= y2; ++y)
+                    {
+                        grid[intX][y] = true;
+                        trueX = trueX + (1.0/m);
+                        intX = std::round(trueX);
+                    }
+
+                else
+                    for(int y = y1; y >= y2; --y)
+                    {
+                        grid[intX][y] = true;
+                        trueX = trueX + (1.0/std::abs(m));
+                        intX = std::round(trueX);
+                    }
+            }
+        }
+    }
 }
 
 void dispGraph(bool **grid, dimensions length)
@@ -85,10 +118,10 @@ void dispGraph(bool **grid, dimensions length)
 	{
 		for(int x = 0; x < length.x; ++x)
 		{
-			if(grid[x][y])
-				std::cout << "# ";
-			else
-				std::cout << "  ";
+            if(grid[x][y])
+                std::cout << static_cast<char>(219) << static_cast<char>(219);
+            else
+                std::cout << "  ";
 		}
 		std::cout << '\n';
 	}
@@ -96,24 +129,24 @@ void dispGraph(bool **grid, dimensions length)
 
 int main()
 {
-	dimensions length{20, 20};
-	
+	dimensions length{40, 40};
+
 	bool **grid = new bool*[length.x];
 	for(int i = 0; i < length.x; ++i)
 	{
 		grid[i] = new bool[length.y]{false};
 	}
-    
-	line test{2.0, 4.0, 18.0, 4.0};
-    draw(grid, length, test);
-	
-	line test2{3.0, 18.0, 3.0, 0.0};
-	draw(grid, length, test2);
-	
+
+    point triangle[] {{5,5},{5,10},{10,10},{10,5}};
+    draw(grid, length, triangle, 4);
+
 	dispGraph(grid, length);
-    
-	
-	delete grid;
-	
+
+    for(int i = 0; i < length.y; ++i)
+    {
+        delete[] grid[i];
+    }
+	delete[] grid;
+
     return 0;
 }
